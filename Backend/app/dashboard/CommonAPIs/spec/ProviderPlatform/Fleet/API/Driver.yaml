@@ -1060,6 +1060,23 @@ apis:
               - fleetOwnerId: Text
             response:
               type: DriverStatusRes
+  - POST:
+      endpoint: /fleet/drivers/location
+      auth: ApiAuthV2
+      request:
+        type: DriversLocationReq
+      response:
+        type: DriverLocationResp
+      helperApi:
+        - POST:
+            endpoint: /fleet/drivers/location/{fleetOwnerId}
+            auth: ApiAuthV2
+            params:
+              fleetOwnerId: Text
+            request:
+              type: DriversLocationReq
+            response:
+              type: DriverLocationResp
 types:
   NearbyDriverReq:
     - point: LatLong
@@ -1503,6 +1520,18 @@ types:
     - onRide: Int
     - active: Int
     - inactive: Int
+  DriversLocationReq:
+    - driverIds: [Id Driver]
+    - firstDate: Maybe UTCTime
+    - lastDate: Maybe UTCTime
+  DriverLocationResp:
+    - driverLocations: [DriverLocation]
+  DriverLocation:
+    - driverId: Id Driver
+    - lat: Maybe Double
+    - lon: Maybe Double
+    - timeStamp: UTCTime
+    - accuracy: Maybe Double
 
 extraOperations:
   - EXTRA_API_TYPES_FILE
