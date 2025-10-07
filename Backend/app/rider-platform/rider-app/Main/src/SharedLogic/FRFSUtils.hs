@@ -984,16 +984,18 @@ createPaymentOrder ::
   DP.Person ->
   Payment.PaymentServiceType ->
   [Payment.VendorSplitDetails] ->
+  Maybe [Payment.Basket] ->
   m (Maybe DOrder.PaymentOrder)
-createPaymentOrder bookings merchantOperatingCityId merchantId amount person paymentType vendorSplitArr = do
+createPaymentOrder bookings merchantOperatingCityId merchantId amount person paymentType vendorSplitArr basket = do
   logInfo $ "createPayments vendorSplitArr" <> show vendorSplitArr
+  logInfo $ "createPayments basket" <> show basket
   personPhone <- person.mobileNumber & fromMaybeM (PersonFieldNotPresent "mobileNumber") >>= decrypt
   personEmail <- mapM decrypt person.email
   (orderId, orderShortId) <- getPaymentIds
   ticketBookingPayments' <- processPayments orderId `mapM` bookings
   QFRFSTicketBookingPayment.createMany ticketBookingPayments'
   isSplitEnabled <- Payment.getIsSplitEnabled merchantId merchantOperatingCityId Nothing paymentType
-  splitSettlementDetails <- Payment.mkUnaggregatedSplitSettlementDetails isSplitEnabled amount vendorSplitArr
+  splitSettlementDetails <- Payment.mkUnaggregatedSplitSettlementDetails isSplitEnabled amount vendorSplitArr True
   let createOrderReq =
         Payment.CreateOrderReq
           { orderId = orderId.getId,
@@ -1012,7 +1014,8 @@ createPaymentOrder bookings merchantOperatingCityId merchantId amount person pay
             optionsGetUpiDeepLinks = Nothing,
             metadataExpiryInMins = Nothing,
             metadataGatewayReferenceId = Nothing, --- assigned in shared kernel
-            splitSettlementDetails = splitSettlementDetails
+            splitSettlementDetails = splitSettlementDetails,
+            basket = basket
           }
   let mocId = merchantOperatingCityId
       commonMerchantId = Kernel.Types.Id.cast @Merchant.Merchant @DPayment.Merchant merchantId
