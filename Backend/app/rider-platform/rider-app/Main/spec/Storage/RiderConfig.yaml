@@ -162,6 +162,7 @@ RiderConfig:
     domainPublicTransportDataVersion: Maybe Int
     updateTicketValidityInSecondsPostSetOnboarding: Maybe Seconds
     enableRideEndOffers: Bool
+    dashboardMediaFileUrlPattern : Maybe Text
 
   beamType:
     ivrTriggerDelay: Maybe Seconds
